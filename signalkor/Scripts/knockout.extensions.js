@@ -6,6 +6,6 @@
 ko.bindingHandlers.draggable = {
     init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
         var value = ko.utils.unwrapObservable(valueAccessor());
-        $(element).draggable(value);
+        $(element).draggable(value).touch
     }
 };
