@@ -76,14 +76,14 @@
 
 <div id="MainContent">
     <label>Player Name:</label><input type="text" data-bind="value: player, enable: !isStarted()"/><button data-bind="click: start">start</button>
-    <div style="width:400px; height: 400px; border: 1px; border-style:solid">
+    <div style="position: relative; width:400px; height: 400px; border: 1px; border-style:solid">
         <!-- ko foreach: otherPlayerPositions -->
-        <div data-bind="style: { position: 'relative', float: 'left', left: x() + 'px', top: y() + 'px' }">
+        <div data-bind="style: { position: 'absolute', float: 'left', left: x() + 'px', top: y() + 'px' }">
             <span style="font-style: italic; font-weight: bold" data-bind="text: player"></span>
         </div>
         <!-- /ko -->
         <!-- ko if: isStarted -->
-        <div id="a" data-bind="draggable: { stop: dragStop }, style: { position: 'relative', float: 'left', left: startx + 'px', top: starty + 'px', cursor: 'pointer' }">
+        <div id="a" data-bind="draggable: { stop: dragStop }, style: { position: 'absolute', float: 'left', left: startx + 'px', top: starty + 'px', cursor: 'pointer' }">
             <span id ="b" style="font-style: italic; font-weight: bold" data-bind="text: player"></span>
         </div>       
         <!-- /ko -->
