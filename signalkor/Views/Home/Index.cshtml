@@ -1,0 +1,99 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+<script type="text/javascript" src="/signalr/hubs"></script>
+
+@if (false) { 
+    <script src="../../Scripts/jquery-1.6.4-vsdoc.js" type="text/javascript"></script>
+    <script src="../../Scripts/knockout.debug.js" type="text/javascript"></script>
+    <script src="../../Scripts/knockout.mapping-latest.debug.js" type="text/javascript"></script>
+}
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        var ViewModel = function () {
+            var self = this;
+
+            self.speed = 10;
+
+            self.player = ko.observable();
+            self.myPosition = ko.observable();
+
+            self.isStarted = ko.observable(false);
+
+            self.start = function () {
+                self.myPosition({ x: Math.floor(Math.random() * 100), y: Math.floor(Math.random() * 100) });
+                self.playerPositions[self.player] = ko.computed(function () { return self.myPosition(); });
+                self.isStarted(true);
+            };
+
+            self.myPosition.subscribe(function (newVal) {
+                hub.moveTo(self.player(), newVal.x, newVal.y);
+            });
+
+            self.playerPositions = ko.observableArray([]);
+
+            self.updatePlayerPositions = function (playerPositions) {
+                for (i in playerPositions) {
+                    var playerPosition = playerPositions[i];
+                    var pp = ko.utils.arrayFirst(self.playerPositions(), function (x) { return x.player() === playerPosition.player; });
+
+                    if (pp)
+                        ko.mapping.fromJS(playerPosition, pp);
+                    else
+                        self.playerPositions.push(ko.mapping.fromJS(playerPosition));
+
+                }
+            };
+
+            self.handleKeyDown = function (event) {
+                switch (event.keyCode) {
+                    case 37:
+                        self.myPosition({ x: self.myPosition().x - self.speed, y: self.myPosition().y });
+                        return false;
+                    case 39:
+                        self.myPosition({ x: self.myPosition().x + self.speed, y: self.myPosition().y });
+                        return false;
+                    case 38:
+                        self.myPosition({ x: self.myPosition().x, y: self.myPosition().y - self.speed });
+                        return false;
+                    case 40:
+                        self.myPosition({ x: self.myPosition().x, y: self.myPosition().y + self.speed });
+                        return false;
+                }
+
+            };
+
+            self.debug = ko.observable(false);
+            self.toggleDebug = function () { self.debug(!self.debug()); };
+        };
+
+        var hub = $.connection.gameHub;
+
+        var vm = window.vm = new ViewModel();
+        $(document).keydown(vm.handleKeyDown);
+
+        ko.applyBindings(vm, $("#MainContent")[0]);
+        hub.updatePlayerPositions = vm.updatePlayerPositions;
+
+        $.connection.hub.start(function () { hub.getPlayerPositions(); });
+
+    });
+
+</script>
+
+<div id="MainContent">
+    <label>Player Name:</label><input type="text" data-bind="value: player, enable: !isStarted()"/><button data-bind="click: start">start</button>
+    <div style="width:400px; height: 400px; border: 1px; border-style:solid" data-bind="foreach: playerPositions">
+        <div id="test" data-bind="style: { position: 'relative', float: 'left', left: x() + 'px', top: y() + 'px' }">
+            <span style="font-style: italic; font-weight: bold" data-bind="text: player"></span>
+        </div>
+        <div style="clear:both"></div>
+    </div>
+
+    <a href="#" data-bind="click: toggleDebug">debug</a>
+    <pre data-bind="visible: debug, text: JSON.stringify(ko.toJS($data), null, 2)"></pre>
+
+</div>
